@@ -189,11 +189,21 @@ def patch_target_modules(
         forbidden_modules.update(COMPOSITE_MODELS[model_type].lora_conflict_keys)
         module_names = []
         for name, _ in model.named_modules():
-            if any(target_module in name for target_module in target_modules) and not any(
+            # if any(target_module in name for target_module in target_modules) and not any(
+            #     forbidden_module in name for forbidden_module in forbidden_modules
+            # ):
+            #     module_names.append(name)
+            is_target = False
+            for target_module in target_modules:
+                # 检查模块完整名称是否以 ".<target_name>" 结尾，或者完全相等
+                if name.endswith("." + target_module) or name == target_module:
+                    is_target = True
+                    break
+            
+            if is_target and not any(
                 forbidden_module in name for forbidden_module in forbidden_modules
             ):
-                module_names.append(name)
-
+                module_names.append(name) 
         return module_names
     else:
         return target_modules
